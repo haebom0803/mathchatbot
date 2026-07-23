@@ -20,7 +20,7 @@
 <div id="chat"></div>
 <div id="inputBar">
   <input id="userInput" type="text" placeholder="답을 입력해줘" autocomplete="off">
-  <button onclick="handleInput()">보내기</button>
+  <button id="sendBtn">보내기</button>
 </div>
 
 <script>
@@ -29,10 +29,10 @@ function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + m
 function norm(s) { return String(s).replace(/\s/g, ''); }
 function gcd(a, b) { return b ? gcd(b, a % b) : a; }
 function lcm(a, b) { return a * b / gcd(a, b); }
-function reduceFrac(n, d) { const g = gcd(n, d); return (n / g) + '/' + (d / g); }
+function reduceFrac(n, d) { var g = gcd(n, d); return (n / g) + '/' + (d / g); }
 function accFrac(n, d) {
-  const g = gcd(n, d), rn = n / g, rd = d / g;
-  const arr = (rd === 1) ? [String(rn), rn + '/1'] : [rn + '/' + rd];
+  var g = gcd(n, d), rn = n / g, rd = d / g;
+  var arr = (rd === 1) ? [String(rn), rn + '/1'] : [rn + '/' + rd];
   if (rn + '/' + rd !== n + '/' + d) arr.push(n + '/' + d);
   return arr;
 }
@@ -41,7 +41,7 @@ function trimDec(s) { return s.replace(/\.0$/, ''); }
 
 // ===== PART 1. 레벨 메타 — [v7 변경] 트랙명 전부 한글화 + 소수(7)·혼합계산(3) 신설 + 비 2→5레벨 확장 =====
 // 7트랙 34레벨: 곱셈4 → 나눗셈3 → 혼합계산3 → 배수약수4 → 소수7 → 분수8 → 비5
-const TRACK_LEVELS = {
+var TRACK_LEVELS = {
   '곱셈':   ['곱셈1','곱셈2','곱셈3','곱셈4'],
   '나눗셈': ['나눗셈1','나눗셈2','나눗셈3'],
   '혼합계산': ['혼합계산1','혼합계산2','혼합계산3'],          // [신규]
@@ -50,12 +50,12 @@ const TRACK_LEVELS = {
   '분수':   ['분수1','분수2','분수3','분수4','분수5','분수6','분수7','분수8'],
   '비':     ['비1','비2','비3','비4','비5']                    // [변경] 비율·백분율·비례배분 추가, 기존 P2는 비4로 재배치
 };
-const GATE_TRACKS = ['곱셈','나눗셈','혼합계산','배수약수','소수','분수','비'];
+var GATE_TRACKS = ['곱셈','나눗셈','혼합계산','배수약수','소수','분수','비'];
 // [신규] 각 트랙의 게이트 대표 레벨 (진단 1단에서 이 레벨 난이도의 문항을 GEN으로 즉석 생성)
-const GATE_LEVEL = { '곱셈':'곱셈3', '나눗셈':'나눗셈2', '혼합계산':'혼합계산2', '배수약수':'배수약수3', '소수':'소수5', '분수':'분수6', '비':'비4' };
-const LEVEL_ORDER = [].concat(TRACK_LEVELS['곱셈'], TRACK_LEVELS['나눗셈'], TRACK_LEVELS['혼합계산'],
+var GATE_LEVEL = { '곱셈':'곱셈3', '나눗셈':'나눗셈2', '혼합계산':'혼합계산2', '배수약수':'배수약수3', '소수':'소수5', '분수':'분수6', '비':'비4' };
+var LEVEL_ORDER = [].concat(TRACK_LEVELS['곱셈'], TRACK_LEVELS['나눗셈'], TRACK_LEVELS['혼합계산'],
                                TRACK_LEVELS['배수약수'], TRACK_LEVELS['소수'], TRACK_LEVELS['분수'], TRACK_LEVELS['비']);
-const LEVEL_NAME = {
+var LEVEL_NAME = {
   곱셈1:'구구단 튼튼', 곱셈2:'곱셈 늘리기', 곱셈3:'곱셈 도전', 곱셈4:'곱셈 마스터',
   나눗셈1:'나눗셈 첫걸음', 나눗셈2:'나머지 찾기', 나눗셈3:'나눗셈 도전',
   혼합계산1:'더하고 빼고', 혼합계산2:'곱하고 나누고', 혼합계산3:'다 섞어서',      // [신규]
@@ -67,7 +67,7 @@ const LEVEL_NAME = {
   비1:'비 만나기', 비2:'비율 알기', 비3:'백분율', 비4:'비례식 마스터', 비5:'비례배분'  // [신규] 비2·비3·비5
 };
 
-const LEVEL_GRADE = {
+var LEVEL_GRADE = {
   곱셈1:2, 곱셈2:3, 곱셈3:3, 곱셈4:4,
   나눗셈1:3, 나눗셈2:3, 나눗셈3:4,
   혼합계산1:5, 혼합계산2:5, 혼합계산3:5,
@@ -78,98 +78,98 @@ const LEVEL_GRADE = {
 };
 
 // ===== PART 2. 문제 생성기 — [v7 변경] 키 전부 한글 트랙명으로 교체, 소수7종·혼합계산3종·비3종 신규 추가 =====
-const GEN = {
+var GEN = {
   곱셈1: function () {
-    const a = rand(2,9), b = rand(2,9);
+    var a = rand(2,9), b = rand(2,9);
     return { level:'곱셈1', meta:{a:a,b:b}, text: a+' × '+b, accepted:[String(a*b)], patterns:[],
       solution: a+'×'+b+' = '+(a*b) };
   },
   곱셈2: function () {
-    const a = rand(2,9)*10, b = rand(2,9);
+    var a = rand(2,9)*10, b = rand(2,9);
     return { level:'곱셈2', meta:{a:a,b:b}, text: a+' × '+b, accepted:[String(a*b)],
       patterns:[{ ans:String((a/10)*b), type:'자릿값 오류' }],
       solution: (a/10)+'×'+b+'='+((a/10)*b)+'에 0을 하나 붙이면 '+(a*b) };
   },
   곱셈3: function () {
-    const a = rand(1,9)*10 + rand(1,9), b = rand(2,9);
-    const noCarry = Math.floor(a/10)*b*10 + ((a%10)*b)%10;
-    const p = (noCarry !== a*b) ? [{ ans:String(noCarry), type:'절차 오류' }] : [];
+    var a = rand(1,9)*10 + rand(1,9), b = rand(2,9);
+    var noCarry = Math.floor(a/10)*b*10 + ((a%10)*b)%10;
+    var p = (noCarry !== a*b) ? [{ ans:String(noCarry), type:'절차 오류' }] : [];
     return { level:'곱셈3', meta:{a:a,b:b}, text: a+' × '+b, accepted:[String(a*b)], patterns:p,
       solution: (a%10)+'×'+b+'와 '+Math.floor(a/10)+'0×'+b+'를 더하면 '+(a*b) };
   },
   곱셈4: function () {
-    const a = rand(1,9)*10+rand(1,9), b = rand(1,9)*10+rand(1,9);
+    var a = rand(1,9)*10+rand(1,9), b = rand(1,9)*10+rand(1,9);
     return { level:'곱셈4', meta:{a:a,b:b}, text: a+' × '+b, accepted:[String(a*b)], patterns:[],
       solution: a+'×'+(b%10)+'과 '+a+'×'+Math.floor(b/10)+'0을 더하면 '+(a*b) };
   },
   나눗셈1: function () {
-    const b = rand(2,9), q = rand(2,9), a = b*q;
+    var b = rand(2,9), q = rand(2,9), a = b*q;
     return { level:'나눗셈1', meta:{a:a,b:b,q:q}, text: a+' ÷ '+b, accepted:[String(q)], patterns:[],
       solution: b+'×'+q+'='+a+'이니까 답은 '+q };
   },
   나눗셈2: function () {
-    const b = rand(2,9), q = rand(2,9), r = rand(1, b-1), a = b*q + r;
+    var b = rand(2,9), q = rand(2,9), r = rand(1, b-1), a = b*q + r;
     return { level:'나눗셈2', meta:{a:a,b:b,q:q,r:r}, text: a+' ÷ '+b+'  (몫,나머지 — 예: 4,1)',
       accepted:[q+','+r, q+'나머지'+r], patterns:[],
       solution: b+'×'+q+'='+(b*q)+', 남는 게 '+r+' → 몫 '+q+' 나머지 '+r };
   },
   나눗셈3: function () {
-    const b = rand(2,9), q = rand(11,33), a = b*q;
+    var b = rand(2,9), q = rand(11,33), a = b*q;
     if (a > 99) return GEN.나눗셈3();
     return { level:'나눗셈3', meta:{a:a,b:b,q:q}, text: a+' ÷ '+b, accepted:[String(q)], patterns:[],
       solution: '십의 자리부터 나누면 몫은 '+q };
   },
   // ===== [신규] 혼합계산1~3 =====
   혼합계산1: function () {
-    const a = rand(5,20), b = rand(1,10), c = rand(1, Math.min(10, a+b-1));
-    const val = a + b - c;
+    var a = rand(5,20), b = rand(1,10), c = rand(1, Math.min(10, a+b-1));
+    var val = a + b - c;
     return { level:'혼합계산1', meta:{a:a,b:b,c:c}, text: a+' + '+b+' − '+c, accepted:[String(val)], patterns:[],
       solution: '왼쪽부터 차례로: '+a+'+'+b+'='+(a+b)+', 그 다음 '+(a+b)+'−'+c+'='+val };
   },
   혼합계산2: function () {
-    const b = rand(2,9), q = rand(2,9), a = b*q, c = rand(2,9);
-    const val = q*c;
+    var b = rand(2,9), q = rand(2,9), a = b*q, c = rand(2,9);
+    var val = q*c;
     return { level:'혼합계산2', meta:{a:a,b:b,c:c,q:q}, text: a+' ÷ '+b+' × '+c, accepted:[String(val)], patterns:[],
       solution: '왼쪽부터 차례로: '+a+'÷'+b+'='+q+', 그 다음 '+q+'×'+c+'='+val };
   },
   혼합계산3: function () {
-    const b = rand(2,9), c = rand(2,9), bc = b*c;
-    const e = rand(2,9), qd = rand(2,9), d = e*qd;
-    const a = rand(1,20);
-    const val = a + bc - qd;
+    var b = rand(2,9), c = rand(2,9), bc = b*c;
+    var e = rand(2,9), qd = rand(2,9), d = e*qd;
+    var a = rand(1,20);
+    var val = a + bc - qd;
     return { level:'혼합계산3', meta:{a:a,b:b,c:c,d:d,e:e,bc:bc,qd:qd}, text: a+' + '+b+'×'+c+' − '+d+'÷'+e,
       accepted:[String(val)],
       patterns:[{ ans:String((a+b)*c - qd), type:'순서 무시 오류' }],   // 곱셈보다 덧셈을 먼저 해버린 오류
       solution: '곱셈·나눗셈 먼저! '+b+'×'+c+'='+bc+', '+d+'÷'+e+'='+qd+'. 그 다음 '+a+'+'+bc+'−'+qd+'='+val };
   },
   배수약수1: function () {
-    const n = [6,7,8,9,12,15,20,30,40][rand(0,8)];
+    var n = [6,7,8,9,12,15,20,30,40][rand(0,8)];
     return { level:'배수약수1', meta:{n:n}, text: n+'의 배수를 작은 것부터 3개 (쉼표로)',
       accepted:[n+','+(n*2)+','+(n*3)], patterns:[],
       solution: n+'을 계속 더하면 돼: '+n+', '+(n*2)+', '+(n*3) };
   },
   배수약수2: function () {
-    const n = [6,8,10,12,15,16,18,20][rand(0,7)];
-    const divs = []; for (let i=1;i<=n;i++) if (n%i===0) divs.push(i);
+    var n = [6,8,10,12,15,16,18,20][rand(0,7)];
+    var divs = []; for (var i=1;i<=n;i++) if (n%i===0) divs.push(i);
     return { level:'배수약수2', meta:{n:n,divs:divs.join(',')}, text: n+'의 약수를 모두 (작은 것부터, 쉼표로)',
       accepted:[divs.join(',')],
       patterns:[{ ans:divs.slice(1,-1).join(','), type:'절차 오류' }],
       solution: '1과 '+n+'도 약수야! 전부: '+divs.join(', ') };
   },
   배수약수3: function () {
-    const pairs = [[4,6],[6,8],[3,4],[6,9],[4,10],[8,12]]; const p = pairs[rand(0,5)];
-    const l = lcm(p[0],p[1]);
-    const pat = (p[0]*p[1] !== l) ? [{ ans:String(p[0]*p[1]), type:'개념 오류' }] : [];
+    var pairs = [[4,6],[6,8],[3,4],[6,9],[4,10],[8,12]]; var p = pairs[rand(0,5)];
+    var l = lcm(p[0],p[1]);
+    var pat = (p[0]*p[1] !== l) ? [{ ans:String(p[0]*p[1]), type:'개념 오류' }] : [];
     return { level:'배수약수3', meta:{a:p[0],b:p[1],l:l}, text: p[0]+'와 '+p[1]+'의 최소공배수',
       accepted:[String(l)], patterns:pat,
       solution: p[0]+'의 배수와 '+p[1]+'의 배수 중 처음 겹치는 수: '+l };
   },
   배수약수4: function () {
-    const pairs = [[12,18],[6,9],[8,12],[10,15],[16,24],[12,20]]; const p = pairs[rand(0,5)];
-    const g = gcd(p[0],p[1]);
-    const dA = [], dB = [];
-    for (let i=1;i<=p[0];i++) if (p[0]%i===0) dA.push(i);
-    for (let i=1;i<=p[1];i++) if (p[1]%i===0) dB.push(i);
+    var pairs = [[12,18],[6,9],[8,12],[10,15],[16,24],[12,20]]; var p = pairs[rand(0,5)];
+    var g = gcd(p[0],p[1]);
+    var dA = [], dB = [];
+    for (var i=1;i<=p[0];i++) if (p[0]%i===0) dA.push(i);
+    for (var j=1;j<=p[1];j++) if (p[1]%j===0) dB.push(j);
     return { level:'배수약수4', meta:{a:p[0],b:p[1],g:g,dA:dA.join(','),dB:dB.join(',')},
       text: p[0]+'과 '+p[1]+'의 최대공약수', accepted:[String(g)], patterns:[],
       solution: '둘 다 나누는 수 중 가장 큰 것: '+g };
@@ -177,50 +177,50 @@ const GEN = {
   // ===== [신규] 소수1~7 — 정수(자릿값 단위) 기반으로 생성해 부동소수점 오차 방지 =====
   소수1: function () {
     if (rand(0,1) === 1) {
-      const n = rand(2,9);
+      var n = rand(2,9);
       return { level:'소수1', meta:{n:n,hundredths:false}, text: '0.1이 '+n+'개면 얼마?',
         accepted:[(n/10).toFixed(1)], patterns:[], solution: '0.1을 '+n+'번 더하면 '+(n/10).toFixed(1) };
     }
-    const n = rand(2,9);
-    return { level:'소수1', meta:{n:n,hundredths:true}, text: '0.01이 '+n+'개면 얼마?',
-      accepted:[(n/100).toFixed(2)], patterns:[], solution: '0.01을 '+n+'번 더하면 '+(n/100).toFixed(2) };
+    var n2 = rand(2,9);
+    return { level:'소수1', meta:{n:n2,hundredths:true}, text: '0.01이 '+n2+'개면 얼마?',
+      accepted:[(n2/100).toFixed(2)], patterns:[], solution: '0.01을 '+n2+'번 더하면 '+(n2/100).toFixed(2) };
   },
   소수2: function () {
-    let t = rand(1,9), h = rand(10,99);
-    let av = t/10, bv = h/100;
+    var t = rand(1,9), h = rand(10,99);
+    var av = t/10, bv = h/100;
     if (av === bv) h = (h % 99) + 1;
     bv = h/100;
-    const aStr = (t/10).toFixed(1), bStr = (h/100).toFixed(2);
-    const bigger = av > bv ? aStr : bStr, smaller = av > bv ? bStr : aStr;
+    var aStr = (t/10).toFixed(1), bStr = (h/100).toFixed(2);
+    var bigger = av > bv ? aStr : bStr, smaller = av > bv ? bStr : aStr;
     return { level:'소수2', meta:{aStr:aStr,bStr:bStr}, text: aStr+'과 '+bStr+' 중 더 큰 수는?',
       accepted:[bigger], patterns:[{ ans:smaller, type:'자릿수 안 맞춘 비교 오류' }],
       solution: aStr+'의 오른쪽에 0을 채우면 '+aStr+'0 — 자릿수를 맞춰서 비교하면 더 큰 건 '+bigger };
   },
   소수3: function () {
     if (rand(0,1) === 1) {
-      const t1 = rand(1,90), t2 = rand(1, 90-t1);
-      const aStr = (t1/10).toFixed(1), bStr = (t2/10).toFixed(1);
+      var t1 = rand(1,90), t2 = rand(1, 90-t1);
+      var aStr = (t1/10).toFixed(1), bStr = (t2/10).toFixed(1);
       return { level:'소수3', meta:{plus:true,t1:t1,t2:t2,aStr:aStr,bStr:bStr}, text: aStr+' + '+bStr,
         accepted:[((t1+t2)/10).toFixed(1)], patterns:[],
         solution: '소수점 맞춰서 더하면: '+aStr+'+'+bStr+'='+((t1+t2)/10).toFixed(1) };
     }
-    const t1 = rand(2,98), t2 = rand(1,t1-1);
-    const aStr = (t1/10).toFixed(1), bStr = (t2/10).toFixed(1);
-    return { level:'소수3', meta:{plus:false,t1:t1,t2:t2,aStr:aStr,bStr:bStr}, text: aStr+' − '+bStr,
-      accepted:[((t1-t2)/10).toFixed(1)], patterns:[],
-      solution: '소수점 맞춰서 빼면: '+aStr+'−'+bStr+'='+((t1-t2)/10).toFixed(1) };
+    var t1b = rand(2,98), t2b = rand(1,t1b-1);
+    var aStrb = (t1b/10).toFixed(1), bStrb = (t2b/10).toFixed(1);
+    return { level:'소수3', meta:{plus:false,t1:t1b,t2:t2b,aStr:aStrb,bStr:bStrb}, text: aStrb+' − '+bStrb,
+      accepted:[((t1b-t2b)/10).toFixed(1)], patterns:[],
+      solution: '소수점 맞춰서 빼면: '+aStrb+'−'+bStrb+'='+((t1b-t2b)/10).toFixed(1) };
   },
   소수4: function () {
-    const t = rand(2,98), n = rand(2,9);
-    const aStr = (t/10).toFixed(1), productTenths = t*n;
+    var t = rand(2,98), n = rand(2,9);
+    var aStr = (t/10).toFixed(1), productTenths = t*n;
     return { level:'소수4', meta:{t:t,n:n,aStr:aStr}, text: aStr+' × '+n,
       accepted:[(productTenths/10).toFixed(1)],
       patterns:[{ ans:String(productTenths), type:'소수점 위치 오류' }],
       solution: t+'×'+n+'='+productTenths+', 소수 한 자리니까 소수점을 왼쪽으로 한 칸: '+(productTenths/10).toFixed(1) };
   },
   소수5: function () {
-    const t1 = rand(1,9), t2 = rand(1,9);
-    const aStr = (t1/10).toFixed(1), bStr = (t2/10).toFixed(1), productHundredths = t1*t2;
+    var t1 = rand(1,9), t2 = rand(1,9);
+    var aStr = (t1/10).toFixed(1), bStr = (t2/10).toFixed(1), productHundredths = t1*t2;
     return { level:'소수5', meta:{t1:t1,t2:t2,aStr:aStr,bStr:bStr}, text: aStr+' × '+bStr,
       accepted:[(productHundredths/100).toFixed(2)],
       patterns:[{ ans:String(productHundredths), type:'소수점 위치 오류' },
@@ -228,68 +228,68 @@ const GEN = {
       solution: t1+'×'+t2+'='+productHundredths+', 소수 두 자리니까 소수점을 왼쪽으로 두 칸: '+(productHundredths/100).toFixed(2) };
   },
   소수6: function () {
-    const n = rand(2,9), qT = rand(2,30), dividendT = qT*n;
-    const dividendStr = (dividendT/10).toFixed(1);
+    var n = rand(2,9), qT = rand(2,30), dividendT = qT*n;
+    var dividendStr = (dividendT/10).toFixed(1);
     return { level:'소수6', meta:{n:n,qT:qT,dividendT:dividendT}, text: dividendStr+' ÷ '+n,
       accepted:[(qT/10).toFixed(1)], patterns:[],
       solution: dividendStr+'는 0.1이 '+dividendT+'개. '+dividendT+'÷'+n+'='+qT+'이니까 '+(qT/10).toFixed(1) };
   },
   소수7: function () {
-    const d = rand(2,15), qT = rand(2,50), dividendH = d*qT;
-    const divisorStr = (d/10).toFixed(1), dividendStr = (dividendH/100).toFixed(2);
-    const val = trimDec((qT/10).toFixed(1));
+    var d = rand(2,15), qT = rand(2,50), dividendH = d*qT;
+    var divisorStr = (d/10).toFixed(1), dividendStr = (dividendH/100).toFixed(2);
+    var val = trimDec((qT/10).toFixed(1));
     return { level:'소수7', meta:{d:d,qT:qT,dividendH:dividendH}, text: dividendStr+' ÷ '+divisorStr,
       accepted:[val, (qT/10).toFixed(1)], patterns:[],
       solution: '나누는 수를 자연수로! 둘 다 소수점을 오른쪽으로 한 칸 옮기면 '+dividendH+'÷'+d+'='+qT+', 답은 '+val };
   },
   분수1: function () {
-    const d = rand(3,8), n = rand(1, d-1);
+    var d = rand(3,8), n = rand(1, d-1);
     return { level:'분수1', meta:{n:n,d:d}, text: '피자를 '+d+'조각으로 똑같이 나눠서 '+n+'조각을 먹었어. 먹은 양을 분수로?',
       accepted:[n+'/'+d], patterns:[],
       solution: '전체 '+d+'조각 중 '+n+'조각 → '+n+'/'+d };
   },
   분수2: function () {
-    const d = rand(2,5), n = rand(1,d-1), k = rand(2,4);
+    var d = rand(2,5), n = rand(1,d-1), k = rand(2,4);
     return { level:'분수2', meta:{n:n,d:d,k:k}, text: n+'/'+d+' = □/'+(d*k)+', □는?',
       accepted:[String(n*k)], patterns:[],
       solution: '분모에 '+k+'를 곱했으니 분자에도: '+n+'×'+k+'='+(n*k) };
   },
   분수3: function () {
-    const base = [[1,2],[2,3],[3,4],[1,3],[2,5]][rand(0,4)]; const k = rand(2,4);
+    var base = [[1,2],[2,3],[3,4],[1,3],[2,5]][rand(0,4)]; var k = rand(2,4);
     return { level:'분수3', meta:{n0:base[0],d0:base[1],k:k},
       text: (base[0]*k)+'/'+(base[1]*k)+'를 기약분수로',
       accepted:[base[0]+'/'+base[1]], patterns:[],
       solution: '분자·분모를 '+k+'로 나누면 '+base[0]+'/'+base[1] };
   },
   분수4: function () {
-    const pairs = [[2,3],[4,6],[3,4],[2,5],[4,10]]; const p = pairs[rand(0,4)];
-    const l = lcm(p[0],p[1]);
-    const good = (l/p[0])+'/'+l+','+(l/p[1])+'/'+l;
-    const mul = p[0]*p[1];
-    const pat = (mul !== l) ? [{ ans:(mul/p[0])+'/'+mul+','+(mul/p[1])+'/'+mul, type:'개념 오류' }] : [];
+    var pairs = [[2,3],[4,6],[3,4],[2,5],[4,10]]; var p = pairs[rand(0,4)];
+    var l = lcm(p[0],p[1]);
+    var good = (l/p[0])+'/'+l+','+(l/p[1])+'/'+l;
+    var mul = p[0]*p[1];
+    var pat = (mul !== l) ? [{ ans:(mul/p[0])+'/'+mul+','+(mul/p[1])+'/'+mul, type:'개념 오류' }] : [];
     return { level:'분수4', meta:{a:p[0],b:p[1],l:l},
       text: '1/'+p[0]+'와 1/'+p[1]+'을 통분하면? (예: 3/6,2/6)',
       accepted:[good], patterns:pat,
       solution: '분모의 최소공배수는 '+l+' → '+good };
   },
   분수5: function () {
-    const d = rand(4,9);
+    var d = rand(4,9);
     if (rand(0,1) === 1) {
-      const a = rand(1,d-2), b = rand(1,d-1-a);
+      var a = rand(1,d-2), b = rand(1,d-1-a);
       return { level:'분수5', meta:{plus:true,a:a,b:b,d:d}, text: a+'/'+d+' + '+b+'/'+d,
         accepted: accFrac(a+b, d),
         patterns:[{ ans:(a+b)+'/'+(d+d), type:'개념 오류' }],
         solution: '분모는 그대로! 분자만 더해: '+(a+b)+'/'+d };
     }
-    const a = rand(2,d-1), b = rand(1,a-1);
-    return { level:'분수5', meta:{plus:false,a:a,b:b,d:d}, text: a+'/'+d+' − '+b+'/'+d,
-      accepted: accFrac(a-b, d), patterns:[],
-      solution: '분모는 그대로, 분자만 빼: '+(a-b)+'/'+d };
+    var a2 = rand(2,d-1), b2 = rand(1,a2-1);
+    return { level:'분수5', meta:{plus:false,a:a2,b:b2,d:d}, text: a2+'/'+d+' − '+b2+'/'+d,
+      accepted: accFrac(a2-b2, d), patterns:[],
+      solution: '분모는 그대로, 분자만 빼: '+(a2-b2)+'/'+d };
   },
   분수6: function () {
-    const pairs = [[2,3],[2,5],[3,4],[4,6],[3,5]]; const p = pairs[rand(0,4)];
-    const l = lcm(p[0],p[1]);
-    const sumN = (l/p[0]) + (l/p[1]);
+    var pairs = [[2,3],[2,5],[3,4],[4,6],[3,5]]; var p = pairs[rand(0,4)];
+    var l = lcm(p[0],p[1]);
+    var sumN = (l/p[0]) + (l/p[1]);
     return { level:'분수6', meta:{n1:1,p0:p[0],n2:1,p1:p[1],l:l},
       text: '1/'+p[0]+' + 1/'+p[1],
       accepted: accFrac(sumN, l),
@@ -298,35 +298,35 @@ const GEN = {
   },
   분수7: function () {
     if (rand(0,1) === 1) {
-      const b = rand(3,9), a = rand(1,b-1), c = rand(2,5);
+      var b = rand(3,9), a = rand(1,b-1), c = rand(2,5);
       return { level:'분수7', meta:{kind:'nat',a:a,b:b,c:c}, text: a+'/'+b+' × '+c,
         accepted: accFrac(a*c, b),
         patterns:[{ ans:(a*c)+'/'+(b*c), type:'개념 오류' }],
         solution: '분자에만 곱해! '+a+'×'+c+'='+(a*c)+' → '+reduceFrac(a*c,b) };
     }
-    const b = rand(2,5), a = rand(1,b-1), d = rand(2,5), c = rand(1,d-1);
-    return { level:'분수7', meta:{kind:'frac',a:a,b:b,c:c,d:d}, text: a+'/'+b+' × '+c+'/'+d,
-      accepted: accFrac(a*c, b*d), patterns:[],
-      solution: '분자끼리, 분모끼리! '+(a*c)+'/'+(b*d)+' = '+reduceFrac(a*c,b*d) };
+    var b2 = rand(2,5), a2 = rand(1,b2-1), d2 = rand(2,5), c2 = rand(1,d2-1);
+    return { level:'분수7', meta:{kind:'frac',a:a2,b:b2,c:c2,d:d2}, text: a2+'/'+b2+' × '+c2+'/'+d2,
+      accepted: accFrac(a2*c2, b2*d2), patterns:[],
+      solution: '분자끼리, 분모끼리! '+(a2*c2)+'/'+(b2*d2)+' = '+reduceFrac(a2*c2,b2*d2) };
   },
   분수8: function () {
     if (rand(0,1) === 1) {
-      const b = rand(2,5), a = rand(1,b-1), c = rand(2,4);
+      var b = rand(2,5), a = rand(1,b-1), c = rand(2,4);
       return { level:'분수8', meta:{kind:'nat',a:a,b:b,c:c}, text: a+'/'+b+' ÷ '+c,
         accepted: accFrac(a, b*c),
         patterns:[{ ans:reduceFrac(a*c, b), type:'개념 오류' }],
         solution: '자연수로 나누면 분모에 곱해: '+a+'/'+(b*c)+' → '+reduceFrac(a,b*c) };
     }
-    const b = rand(2,5), a = rand(1,b-1), d = rand(2,5), c = rand(1,d-1);
-    return { level:'분수8', meta:{kind:'frac',a:a,b:b,c:c,d:d}, text: a+'/'+b+' ÷ '+c+'/'+d,
-      accepted: accFrac(a*d, b*c),
-      patterns:[{ ans:reduceFrac(a*c, b*d), type:'개념 오류' }],
-      solution: '뒤집어서 곱하기! '+a+'/'+b+' × '+d+'/'+c+' = '+reduceFrac(a*d,b*c) };
+    var b2 = rand(2,5), a2 = rand(1,b2-1), d2 = rand(2,5), c2 = rand(1,d2-1);
+    return { level:'분수8', meta:{kind:'frac',a:a2,b:b2,c:c2,d:d2}, text: a2+'/'+b2+' ÷ '+c2+'/'+d2,
+      accepted: accFrac(a2*d2, b2*c2),
+      patterns:[{ ans:reduceFrac(a2*c2, b2*d2), type:'개념 오류' }],
+      solution: '뒤집어서 곱하기! '+a2+'/'+b2+' × '+d2+'/'+c2+' = '+reduceFrac(a2*d2,b2*c2) };
   },
   비1: function () {
-    const items = [['사과','개','배','개'],['연필','자루','지우개','개'],['우유','컵','시럽','컵']];
-    const it = items[rand(0,2)];
-    let a = rand(2,9), b = rand(2,9); if (a === b) b = (b % 9) + 1;
+    var items = [['사과','개','배','개'],['연필','자루','지우개','개'],['우유','컵','시럽','컵']];
+    var it = items[rand(0,2)];
+    var a = rand(2,9), b = rand(2,9); if (a === b) b = (b % 9) + 1;
     return { level:'비1', meta:{a:a,b:b},
       text: it[0]+' '+a+it[1]+'와 '+it[2]+' '+b+it[3]+'가 있어. '+it[0]+'와 '+it[2]+'의 비는? (예: 1:2)',
       accepted:[a+':'+b],
@@ -335,8 +335,8 @@ const GEN = {
   },
   // ===== [신규] 비2 비율, 비3 백분율, 비5 비례배분 =====
   비2: function () {
-    const pairs = [[6,4],[3,6],[8,2],[9,3],[4,8],[10,5]]; const p = pairs[rand(0,pairs.length-1)];
-    const g = gcd(p[0],p[1]), rn = p[0]/g, rd = p[1]/g;
+    var pairs = [[6,4],[3,6],[8,2],[9,3],[4,8],[10,5]]; var p = pairs[rand(0,pairs.length-1)];
+    var g = gcd(p[0],p[1]), rn = p[0]/g, rd = p[1]/g;
     return { level:'비2', meta:{a:p[0],b:p[1]}, text: p[0]+':'+p[1]+'의 비율은? (분수로)',
       accepted:[rn+'/'+rd],
       patterns:[{ ans:rd+'/'+rn, type:'개념 오류' }],   // 기준량·비교하는양 뒤집음
@@ -344,27 +344,27 @@ const GEN = {
   },
   비3: function () {
     if (rand(0,1) === 1) {
-      const percents = [10,20,25,30,40,50,60,75,80,90]; const pct = percents[rand(0,percents.length-1)];
+      var percents = [10,20,25,30,40,50,60,75,80,90]; var pct = percents[rand(0,percents.length-1)];
       return { level:'비3', meta:{pct:pct}, text: pct+'%는 소수로 얼마?',
         accepted:[String(pct/100)], patterns:[], solution: pct+'% = '+pct+'/100 = '+(pct/100) };
     }
-    const decimals = [0.1,0.2,0.25,0.3,0.4,0.5,0.6,0.75,0.8,0.9]; const d = decimals[rand(0,decimals.length-1)];
-    return { level:'비3', meta:{d:d}, text: d+'를 %로 나타내면?',
-      accepted:[String(Math.round(d*100))], patterns:[], solution: d+' × 100 = '+Math.round(d*100)+'%' };
+    var decimals = [0.1,0.2,0.25,0.3,0.4,0.5,0.6,0.75,0.8,0.9]; var dd = decimals[rand(0,decimals.length-1)];
+    return { level:'비3', meta:{d:dd}, text: dd+'를 %로 나타내면?',
+      accepted:[String(Math.round(dd*100))], patterns:[], solution: dd+' × 100 = '+Math.round(dd*100)+'%' };
   },
   비4: function () {
-    let a = rand(2,4), b = rand(3,9); if (a === b) b++;
-    const k = rand(2,4);
-    const wrong = a*k + (b-a);
-    const pat = (wrong !== b*k) ? [{ ans:String(wrong), type:'개념 오류' }] : [];
+    var a = rand(2,4), b = rand(3,9); if (a === b) b++;
+    var k = rand(2,4);
+    var wrong = a*k + (b-a);
+    var pat = (wrong !== b*k) ? [{ ans:String(wrong), type:'개념 오류' }] : [];
     return { level:'비4', meta:{a:a,b:b,k:k}, text: a+':'+b+' = '+(a*k)+':□, □는?',
       accepted:[String(b*k)], patterns:pat,
       solution: '앞이 '+k+'배 됐으니 뒤도 '+k+'배: '+b+'×'+k+'='+(b*k) };
   },
   비5: function () {
-    const items = [['사탕','개'],['구슬','개'],['색종이','장']]; const it = items[rand(0,items.length-1)];
-    const rA = rand(1,5), rB = rand(1,5); const g = gcd(rA,rB), ra = rA/g, rb = rB/g;
-    const unit = rand(2,6), total = (ra+rb)*unit, shareA = ra*unit, shareB = rb*unit;
+    var items = [['사탕','개'],['구슬','개'],['색종이','장']]; var it = items[rand(0,items.length-1)];
+    var rA = rand(1,5), rB = rand(1,5); var g = gcd(rA,rB), ra = rA/g, rb = rB/g;
+    var unit = rand(2,6), total = (ra+rb)*unit, shareA = ra*unit, shareB = rb*unit;
     return { level:'비5', meta:{it0:it[0],it1:it[1],total:total,ra:ra,rb:rb,unit:unit,shareA:shareA,shareB:shareB},
       text: it[0]+' '+total+it[1]+'를 '+ra+':'+rb+'로 나누면 각각 몇 '+it[1]+'? (쉼표로)',
       accepted:[shareA+','+shareB],
@@ -374,7 +374,7 @@ const GEN = {
 };
 
 // ===== PART 2.5 템플릿 문장제 — [v7 변경] 신규 레벨 일부에 문장제 추가 =====
-const WORDT = {
+var WORDT = {
   곱셈2: function (m) { return '색종이가 한 상자에 '+m.a+'장씩 들어 있어. '+m.b+'상자면 모두 몇 장?'; },
   곱셈3: function (m) { return '사탕이 한 봉지에 '+m.a+'개씩 '+m.b+'봉지 있어. 모두 몇 개?'; },
   곱셈4: function (m) { return '하루에 줄넘기를 '+m.a+'번씩 '+m.b+'일 동안 하면 모두 몇 번?'; },
@@ -397,61 +397,61 @@ const WORDT = {
 };
 
 // ===== PART 2.6 단계 풀이 — [v7 변경] 소수4~7·혼합계산3·비5 단계풀이 신규 추가 =====
-const STEPS = {
-  곱셈3: function (p) { const m = p.meta; return [
+var STEPS = {
+  곱셈3: function (p) { var m = p.meta; return [
     { q: (m.a%10)+'×'+m.b+'는?', acc:[String((m.a%10)*m.b)] },
     { q: Math.floor(m.a/10)+'0×'+m.b+'는?', acc:[String(Math.floor(m.a/10)*10*m.b)] },
     { q: '이제 둘을 더하면?', acc: p.accepted } ]; },
-  곱셈4: function (p) { const m = p.meta; return [
+  곱셈4: function (p) { var m = p.meta; return [
     { q: m.a+'×'+(m.b%10)+'은?', acc:[String(m.a*(m.b%10))] },
     { q: m.a+'×'+Math.floor(m.b/10)+'0은?', acc:[String(m.a*Math.floor(m.b/10)*10)] },
     { q: '이제 둘을 더하면?', acc: p.accepted } ]; },
-  나눗셈2: function (p) { const m = p.meta; return [
+  나눗셈2: function (p) { var m = p.meta; return [
     { q: m.b+'×몇이 '+m.a+'를 넘지 않으면서 가장 클까?', acc:[String(m.q)] },
     { q: m.b+'×'+m.q+'='+(m.b*m.q)+', 그럼 남는 건?', acc:[String(m.r)] },
     { q: '몫,나머지로 답하면?', acc: p.accepted } ]; },
-  혼합계산3: function (p) { const m = p.meta; return [                                    // [신규]
+  혼합계산3: function (p) { var m = p.meta; return [                                    // [신규]
     { q: m.b+'×'+m.c+'는?', acc:[String(m.bc)] },
     { q: m.d+'÷'+m.e+'는?', acc:[String(m.qd)] },
     { q: '이제 '+m.a+'+'+m.bc+'−'+m.qd+'를 계산하면?', acc: p.accepted } ]; },
-  배수약수3: function (p) { const m = p.meta; return [
+  배수약수3: function (p) { var m = p.meta; return [
     { q: m.a+'의 배수를 작은 것부터 3개?', acc:[m.a+','+(m.a*2)+','+(m.a*3)] },
     { q: m.b+'의 배수를 작은 것부터 3개?', acc:[m.b+','+(m.b*2)+','+(m.b*3)] },
     { q: '두 배수에서 처음 겹치는 수는?', acc:[String(m.l)] } ]; },
-  배수약수4: function (p) { const m = p.meta; return [
+  배수약수4: function (p) { var m = p.meta; return [
     { q: m.a+'의 약수를 모두? (쉼표)', acc:[m.dA] },
     { q: m.b+'의 약수를 모두?', acc:[m.dB] },
     { q: '공통 약수 중 가장 큰 건?', acc:[String(m.g)] } ]; },
-  소수4: function (p) { const m = p.meta; return [                                        // [신규]
+  소수4: function (p) { var m = p.meta; return [                                        // [신규]
     { q: '소수점 없다 생각하고 계산: '+m.t+'×'+m.n+'는?', acc:[String(m.t*m.n)] },
     { q: '원래 수는 소수 한 자리였으니 소수점을 왼쪽으로 한 칸 옮기면?', acc: p.accepted } ]; },
-  소수5: function (p) { const m = p.meta; return [                                        // [신규]
+  소수5: function (p) { var m = p.meta; return [                                        // [신규]
     { q: '소수점 없다 생각하고: '+m.t1+'×'+m.t2+'는?', acc:[String(m.t1*m.t2)] },
     { q: '두 수 모두 소수 한 자리 → 합쳐서 소수 두 자리. 소수점을 왼쪽으로 두 칸 옮기면?', acc: p.accepted } ]; },
-  소수6: function (p) { const m = p.meta; return [                                        // [신규]
+  소수6: function (p) { var m = p.meta; return [                                        // [신규]
     { q: '0.1이 몇 개인지로 생각: '+m.dividendT+'÷'+m.n+'는?', acc:[String(m.qT)] },
     { q: '그럼 원래 수는? (소수로)', acc: p.accepted } ]; },
-  소수7: function (p) { const m = p.meta; return [                                        // [신규]
+  소수7: function (p) { var m = p.meta; return [                                        // [신규]
     { q: '나누는 수를 자연수로 만들려면 소수점을 몇 칸 옮겨야 해?', acc:['1'] },
     { q: '나뉨수도 같이 옮기고 나누면: '+m.dividendH+'÷'+m.d+'는?', acc:[String(m.qT)] },
     { q: '그럼 원래 답은?', acc: p.accepted } ]; },
-  분수3: function (p) { const m = p.meta; return [
+  분수3: function (p) { var m = p.meta; return [
     { q: '분자 '+(m.n0*m.k)+'와 분모 '+(m.d0*m.k)+'를 둘 다 나눌 수 있는 가장 큰 수는?', acc:[String(m.k)] },
     { q: '분자 '+(m.n0*m.k)+' ÷ '+m.k+'는?', acc:[String(m.n0)] },
     { q: '분모 '+(m.d0*m.k)+' ÷ '+m.k+'는? 그럼 답은? (분수로)', acc: p.accepted } ]; },
-  분수4: function (p) { const m = p.meta; return [
+  분수4: function (p) { var m = p.meta; return [
     { q: '분모 '+m.a+'와 '+m.b+'의 최소공배수는?', acc:[String(m.l)] },
     { q: '1/'+m.a+' = □/'+m.l+', □는?', acc:[String(m.l/m.a)] },
     { q: '1/'+m.b+' = □/'+m.l+', □는?', acc:[String(m.l/m.b)] } ]; },
-  분수5: function (p) { const m = p.meta; return [
+  분수5: function (p) { var m = p.meta; return [
     { q: '분모가 같으니 분모는 그대로! 분자끼리 '+(m.plus?'더하면':'빼면')+'?',
       acc:[String(m.plus ? m.a+m.b : m.a-m.b)] },
     { q: '그럼 답은? (분수로)', acc: p.accepted } ]; },
-  분수6: function (p) { const m = p.meta; return [
+  분수6: function (p) { var m = p.meta; return [
     { q: '분모 '+m.p0+'과 '+m.p1+'의 최소공배수는?', acc:[String(m.l)] },
     { q: '1/'+m.p0+' = □/'+m.l+', □는?', acc:[String(m.l/m.p0)] },
     { q: '그럼 '+(m.l/m.p0)+'/'+m.l+' + '+(m.l/m.p1)+'/'+m.l+' = ?', acc: p.accepted } ]; },
-  분수7: function (p) { const m = p.meta;
+  분수7: function (p) { var m = p.meta;
     if (m.kind === 'nat') return [
       { q: '분자 '+m.a+'×'+m.c+'는?', acc:[String(m.a*m.c)] },
       { q: '분모는? (자연수 곱셈은 분자에만!)', acc:[String(m.b)] },
@@ -460,17 +460,17 @@ const STEPS = {
       { q: '분자끼리: '+m.a+'×'+m.c+'는?', acc:[String(m.a*m.c)] },
       { q: '분모끼리: '+m.b+'×'+m.d+'는?', acc:[String(m.b*m.d)] },
       { q: '그럼 답은?', acc: p.accepted } ]; },
-  분수8: function (p) { const m = p.meta;
+  분수8: function (p) { var m = p.meta;
     if (m.kind === 'nat') return [
       { q: '자연수로 나누면 분모에 곱해! 분모 '+m.b+'×'+m.c+'는?', acc:[String(m.b*m.c)] },
       { q: '그럼 답은?', acc: p.accepted } ];
     return [
       { q: m.c+'/'+m.d+'를 뒤집으면?', acc:[m.d+'/'+m.c] },
       { q: '이제 곱셈! '+m.a+'/'+m.b+' × '+m.d+'/'+m.c+' = ?', acc: p.accepted } ]; },
-  비4: function (p) { const m = p.meta; return [
+  비4: function (p) { var m = p.meta; return [
     { q: '앞의 수가 '+m.a+'에서 '+(m.a*m.k)+'로 — 몇 배가 됐지?', acc:[String(m.k)] },
     { q: '그럼 뒤도 같은 배! '+m.b+'×'+m.k+'는?', acc: p.accepted } ]; },
-  비5: function (p) { const m = p.meta; return [                                          // [신규]
+  비5: function (p) { var m = p.meta; return [                                          // [신규]
     { q: '전체를 몇 묶음으로 나눠? ('+m.ra+'+'+m.rb+')', acc:[String(m.ra+m.rb)] },
     { q: '전체 '+m.total+'를 '+(m.ra+m.rb)+'묶음으로 나누면 한 묶음은?', acc:[String(m.unit)] },
     { q: '그럼 각각 몇 개? (쉼표로, 예: 12,8)', acc: p.accepted } ]; }
@@ -480,18 +480,18 @@ const STEPS = {
 // [참고] 소수 문제는 parseInt가 소수점 아래를 버리므로 "계산 실수" 근접판정이 정수 자릿수 위주로 동작함.
 // 파일럿 테스트 후 필요하면 소수 전용 근접판정 로직 추가 예정 (다음 세션 TODO).
 function grade(problem, rawInput) {
-  const v = norm(rawInput);
+  var v = norm(rawInput);
   if (v === '' || v.indexOf('몰라') !== -1 || v.indexOf('모르') !== -1) return '무응답/회피';
   if (problem.accepted.some(function (a) { return norm(a) === v; })) return 'correct';
-  for (let i = 0; i < problem.patterns.length; i++)
+  for (var i = 0; i < problem.patterns.length; i++)
     if (norm(problem.patterns[i].ans) === v) return problem.patterns[i].type;
-  const num = parseFloat(v), ans = parseFloat(problem.accepted[0]);
+  var num = parseFloat(v), ans = parseFloat(problem.accepted[0]);
   if (!isNaN(num) && !isNaN(ans) && Math.abs(num - ans) <= Math.max(0.1, Math.abs(ans) * 0.1)) return '계산 실수';
   return '절차 오류';
 }
 
 // ===== PART 4. 개념 대본 + 브릿지 — [v7 변경] 소수7종·혼합계산3종·비2종 CONCEPT 신규, 브릿지 4개 신규 =====
-const CONCEPT = {
+var CONCEPT = {
   곱셈1:'구구단은 같은 수를 여러 번 더하는 거야. 7×4는 7을 4번 더한 것 = 7+7+7+7 = 28!',
   곱셈2:'30×4는 3×4를 10배 한 거야. 3×4=12니까 0을 하나 붙여서 120!',
   곱셈3:'두자릿수 곱셈은 쪼개서 해. 37×4 = (30×4) + (7×4) = 120 + 28 = 148. 올림을 잊지 마!',
@@ -527,7 +527,7 @@ const CONCEPT = {
   비4:'비례식은 양쪽 비가 같다는 뜻! 2:3 = 4:□에서 앞이 2배가 됐으니 뒤도 2배 → 6. 더하기가 아니라 곱하기!',
   비5:'비례배분은 전체를 정해진 비로 나누는 것. 비의 합만큼 묶음을 만들면 한 묶음의 크기가 나와!'  // [신규]
 };
-const BRIDGE = {
+var BRIDGE = {
   곱셈2:'🌉 [자릿값 이야기]\n30×4를 보자. 30은 "3이 10개 묶인 것".\n그러니까 30×4 = 3×4의 10배!\n3×4=12 → 10배 → 120. 0 하나가 "10배"라는 뜻이야.',
   나눗셈1:'🌉 [나눗셈 = 똑같이 나누기]\n사탕 12개를 3명이 똑같이 나누면 몇 개씩?\n3×□=12에서 □를 찾는 것과 같아. 나눗셈은 곱셈의 거꾸로!',
   혼합계산3:'🌉 [계산 순서]\n괄호 → 곱셈·나눗셈 → 덧셈·뺄셈 순서로!\n3+4×2−6÷2는 4×2=8, 6÷2=3을 먼저 하고 나서 3+8−3=8!',   // [신규]
@@ -542,28 +542,28 @@ const BRIDGE = {
   비2:'🌉 [비율이란]\n비율은 두 수를 비교한 결과를 분수로 나타낸 거야.\n6:4의 비율은 6/4 = 3/2!'   // [신규]
 };
 
-const CONCEPTS = [
+var CONCEPTS = [
   { id:'C1', text:'30, 60, 90, 다음 수는?', accepted:['120'] },
   { id:'C2', text:'6×4와 같은 것은? ① 6+6+6+6 ② 6+4 ③ 4+4+4 (번호)', accepted:['1','①'] }
 ];
 
 // ===== PART 6. 채팅 UI (변경 없음) =====
-const chatEl = document.getElementById('chat');
+var chatEl = document.getElementById('chat');
 function say(text) {
-  const d = document.createElement('div'); d.className = 'msg bot'; d.textContent = text;
+  var d = document.createElement('div'); d.className = 'msg bot'; d.textContent = text;
   chatEl.appendChild(d); chatEl.scrollTop = chatEl.scrollHeight;
 }
 function echo(text) {
-  const d = document.createElement('div'); d.className = 'msg me'; d.textContent = text;
+  var d = document.createElement('div'); d.className = 'msg me'; d.textContent = text;
   chatEl.appendChild(d); chatEl.scrollTop = chatEl.scrollHeight;
 }
 function sys(text) {
-  const d = document.createElement('div'); d.className = 'sys'; d.textContent = text;
+  var d = document.createElement('div'); d.className = 'sys'; d.textContent = text;
   chatEl.appendChild(d); chatEl.scrollTop = chatEl.scrollHeight;
 }
 
 // ===== PART 7. 상태 + 진단 세션 — [v7 전면 교체] 이분탐색 진단으로 재설계 =====
-const S = {
+var S = {
   mode: 'name', nickname: '', levelIdx: 0, recent: [],
   problem: null, similarLeft: 0, seenBridge: {}, records: [],
   steps: null, stepIdx: 0, stuck: [],
@@ -571,10 +571,10 @@ const S = {
   recentTexts: [],
   grade: 6,            // [신규] 학생 학년 (입력 전 기본 6 = 캡 없음과 동일)
   afterGrade: '',      // [신규] 학년 입력 후 갈 곳: 'diagnose' | 'resume'
-  recent10: [],         // [신규] 강등 판정용 최근 10문제 정오답
-  pendingUpIdx: -1 
+  recent10: [],         // [신규] 강등 판정용 최근 10문제 정오답  -- 여기 콤마 누락이 원인이었음(수정 완료)
+  pendingUpIdx: -1
 };
-let diag = null;
+var diag = null;
 
 // [신규] 진단 문항은 더 이상 고정 문항표가 아니라, 학습에 쓰는 GEN을 그대로 재사용해서 즉석 생성
 // (트랙 7개로 늘어난 데 맞춰 v6에서 정한 이분탐색 방식 구현: 1단 게이트 → 2단 이분탐색 → 확인 1회 → 개념확인)
@@ -600,7 +600,7 @@ function askDiag() {
   say('Q. ' + diag.currentItem.text);
 }
 function diagCheck(item, input) {
-  const v = norm(input);
+  var v = norm(input);
   if (item.accepted.some(function (a) { return norm(a) === v; })) return true;
   if (item.patterns) item.patterns.forEach(function (p) {
     if (norm(p.ans) === v) diag.notes.push(p.type || p.note);
@@ -608,8 +608,8 @@ function diagCheck(item, input) {
   return false;
 }
 function handleDiag(input) {
-  const item = diag.currentItem;
-  const ok = diagCheck(item, input);
+  var item = diag.currentItem;
+  var ok = diagCheck(item, input);
 
   if (diag.phase === 'gate') {
     if (ok) {
@@ -661,30 +661,30 @@ function currentLevel() { return LEVEL_ORDER[S.levelIdx]; }
 // [신규] 학년 캡 관련 헬퍼
 function isAllowed(lv) { return LEVEL_GRADE[lv] <= S.grade + 1; }          // 이 레벨이 학년+1 안인가
 function maxAllowedInTrack(levels) {                                        // 트랙 내 허용 최고 인덱스
-  let m = 0;
-  for (let i = 0; i < levels.length; i++) if (isAllowed(levels[i])) m = i;
+  var m = 0;
+  for (var i = 0; i < levels.length; i++) if (isAllowed(levels[i])) m = i;
   return m;
 }
 function lastAllowedLevel() {                                               // 전체에서 허용 최고 레벨
-  for (let i = LEVEL_ORDER.length - 1; i >= 0; i--) if (isAllowed(LEVEL_ORDER[i])) return LEVEL_ORDER[i];
+  for (var i = LEVEL_ORDER.length - 1; i >= 0; i--) if (isAllowed(LEVEL_ORDER[i])) return LEVEL_ORDER[i];
   return LEVEL_ORDER[0];
 }
 function nextAllowedIdx(from) {                                             // 위쪽으로 가장 가까운 허용 레벨
-  for (let i = from + 1; i < LEVEL_ORDER.length; i++) if (isAllowed(LEVEL_ORDER[i])) return i;
+  for (var i = from + 1; i < LEVEL_ORDER.length; i++) if (isAllowed(LEVEL_ORDER[i])) return i;
   return -1;
 }
 function prevAllowedIdx(from) {                                             // 아래쪽으로 가장 가까운 허용 레벨
-  for (let i = from - 1; i >= 0; i--) if (isAllowed(LEVEL_ORDER[i])) return i;
+  for (var i = from - 1; i >= 0; i--) if (isAllowed(LEVEL_ORDER[i])) return i;
   return -1;
 }
 function firstOpenGate(from) {                                              // 허용 레벨이 하나라도 있는 다음 게이트 트랙
-  let i = from;
+  var i = from;
   while (i < GATE_TRACKS.length && !TRACK_LEVELS[GATE_TRACKS[i]].some(function (lv) { return isAllowed(lv); })) i++;
   return i;
 }
 function clampLevelToGrade() {                                              // 이어하기 레벨이 캡 밖이면 끌어내림
   if (!isAllowed(currentLevel())) {
-    const p = prevAllowedIdx(S.levelIdx + 1);
+    var p = prevAllowedIdx(S.levelIdx + 1);
     if (p !== -1) S.levelIdx = p;
   }
 }
@@ -696,7 +696,7 @@ function askGrade(after) {
   say('몇 학년이야? 숫자로 알려줘! (예: 5)');
 }
 function handleGrade(input) {
-  const g = parseInt(String(input).replace(/[^0-9]/g, ''), 10);   // "5학년"처럼 써도 숫자만 추출
+  var g = parseInt(String(input).replace(/[^0-9]/g, ''), 10);   // "5학년"처럼 써도 숫자만 추출
   if (!(g >= 1 && g <= 6)) { say('1부터 6 사이 숫자로 알려줘! 몇 학년이야?'); return; }
   S.grade = g;
   say(g + '학년이구나! 알겠어 😊');
@@ -715,10 +715,10 @@ function pushResult(ok) {
 // [신규] 강등 판정: 최근 10문제 중 정답 5개 미만이면 한 단계 아래로
 function maybeDemote() {
   if (S.recent10.length < 10) return false;
-  const c = S.recent10.filter(Boolean).length;
+  var c = S.recent10.filter(Boolean).length;
   if (c >= 5) return false;
   S.recent = []; S.recent10 = [];                 // 판정 윈도우 리셋 = 강등 직후 유예
-  const prev = prevAllowedIdx(S.levelIdx);
+  var prev = prevAllowedIdx(S.levelIdx);
   if (prev === -1) return false;                  // 더 내려갈 곳 없으면 리셋만
   S.levelIdx = prev;
   sys('🧗 [' + LEVEL_NAME[currentLevel()] + '] 단계로 잠깐 내려갈게!');
@@ -729,14 +729,14 @@ function maybeDemote() {
 
 // [신규] "어려워" 류 발화 감지 (숫자 답과 겹칠 일 없는 표현만)
 function isHardCommand(t) {
-  const v = norm(t);
+  var v = norm(t);
   return v.indexOf('어려') !== -1 || v.indexOf('낮춰') !== -1 ||
          v.indexOf('내려줘') !== -1 || v.indexOf('쉬운') !== -1 || v.indexOf('쉽게') !== -1;
 }
 
 // [신규] 앞쪽으로 "자기 학년 이하" 첫 레벨 찾기 (위 학년 과정 건너뛰기용)
 function nextGradeFitIdx(from) {
-  for (let i = from + 1; i < LEVEL_ORDER.length; i++) {
+  for (var i = from + 1; i < LEVEL_ORDER.length; i++) {
     if (LEVEL_GRADE[LEVEL_ORDER[i]] <= S.grade) return i;
   }
   return -1;
@@ -745,7 +745,7 @@ function nextGradeFitIdx(from) {
 // [신규] 학생이 어렵다고 할 때: 위 학년 과정이면 다음 트랙으로 점프, 아니면 한 단계 아래로
 function stepDown() {
   S.recent = []; S.recent10 = [];                        // 이동 후 판정 유예
-  let target = -1;
+  var target = -1;
   if (LEVEL_GRADE[currentLevel()] > S.grade) {
     target = nextGradeFitIdx(S.levelIdx);                // 지금이 위 학년 과정 → 앞으로 건너뜀
     if (target !== -1) say('그래, 여기는 사실 ' + LEVEL_GRADE[currentLevel()] + '학년 과정이었어! 대신 다음 과정으로 넘어가서 해보자 😄');
@@ -760,14 +760,14 @@ function stepDown() {
 
 // [신규] 승급 확인 응답 처리 (도전 / 넘어가기)
 function handleAskUp(input) {
-  const v = norm(input);
+  var v = norm(input);
   if (v.indexOf('도전') !== -1 || v === '응' || v === '네' || v.indexOf('좋아') !== -1 || v.indexOf('할래') !== -1) {
     S.levelIdx = S.pendingUpIdx; S.pendingUpIdx = -1;
     sys('🎊 레벨 업! → [' + LEVEL_NAME[currentLevel()] + '] 단계');
     say('멋져! 도전 정신 최고야 🔥 [' + LEVEL_NAME[currentLevel()] + '] 단계 시작!');
     startLearning();
   } else if (v.indexOf('넘어') !== -1 || v.indexOf('다른') !== -1 || v.indexOf('아니') !== -1) {
-    const fit = nextGradeFitIdx(S.pendingUpIdx - 1);     // 위 학년 과정 건너뛰고 다음 맞는 레벨
+    var fit = nextGradeFitIdx(S.pendingUpIdx - 1);     // 위 학년 과정 건너뛰고 다음 맞는 레벨
     S.pendingUpIdx = -1;
     if (fit !== -1) {
       S.levelIdx = fit;
@@ -784,21 +784,21 @@ function handleAskUp(input) {
 }
 
 function startLearning() {
-  const lv = currentLevel();
+  var lv = currentLevel();
   if (BRIDGE[lv] && !S.seenBridge[lv]) { S.seenBridge[lv] = true; say(BRIDGE[lv]); }
   nextProblem();
 }
 
 function nextProblem() {
   if (maybeDemote()) return; 
-  const lv = currentLevel();
+  var lv = currentLevel();
   S.probCount++;
   if (S.probCount > 1 && (S.probCount - 1) % 10 === 0 && sendSave('중간')) {
     sys('💾 여기까지 자동 저장했어!');
   }
   S.problem = genFresh(lv);
   if (WORDT[lv] && Math.random() < 0.3) {
-    const wt = WORDT[lv](S.problem.meta);
+    var wt = WORDT[lv](S.problem.meta);
     if (wt) S.problem.text = wt;
   }
   S.mode = 'learn';
@@ -806,7 +806,7 @@ function nextProblem() {
 }
 
 function genFresh(lv) {
-  let p, tries = 0;
+  var p, tries = 0;
   do { p = GEN[lv](); tries++; }
   while (tries < 15 && S.recentTexts.indexOf(p.text) !== -1);
   S.recentTexts.push(p.text);
@@ -815,7 +815,7 @@ function genFresh(lv) {
 }
 
 function handleLearn(input) {
-  const result = grade(S.problem, input);
+  var result = grade(S.problem, input);
   S.records.push({ type:'풀이', level: currentLevel(), q: S.problem.text, a: input, result: result });
   if (result === 'correct') { onCorrect(); return; }
   S.lastWrong = input;
@@ -831,7 +831,7 @@ function handleLearn(input) {
 }
 
 function handleRetry(input) {
-  const result = grade(S.problem, input);
+  var result = grade(S.problem, input);
   S.records.push({ type:'재시도', level: currentLevel(), q: S.problem.text, a: input, result: result });
   if (result === 'correct') { say('그렇지! 천천히 하면 되는 거였어 👍'); onCorrect(true); return; }
   S.lastWrong = input;
@@ -845,8 +845,8 @@ function handleWhy(input) {
 }
 
 function explainAndSimilar(studentSaid) {
-  const lv = currentLevel();
-  const api = new URLSearchParams(location.search).get('api');
+  var lv = currentLevel();
+  var api = new URLSearchParams(location.search).get('api');
   if (!api) { scriptedExplain(studentSaid, lv); askSimilar(lv); return; }
   S.mode = 'wait';
   say('음, 어떻게 설명하면 좋을까… 잠깐 생각할게 🤔');
@@ -885,10 +885,10 @@ function askSimilar(lv) {
 }
 
 function handleSimilar(input) {
-  const result = grade(S.problem, input);
+  var result = grade(S.problem, input);
   S.records.push({ type:'유사문제', level: currentLevel(), q: S.problem.text, a: input, result: result });
   if (result === 'correct') { say('바로 그거야! 이제 알겠지? 🙌'); onCorrect(true); return; }
-  const lv = currentLevel();
+  var lv = currentLevel();
   pushResult(false);                                               // [변경] 강등 윈도우에도 기록
   if (STEPS[lv]) {
     S.steps = STEPS[lv](S.problem); S.stepIdx = 0; S.stuck = [];
@@ -903,8 +903,8 @@ function handleSimilar(input) {
 }
 
 function handleSteps(input) {
-  const cur = S.steps[S.stepIdx];
-  const ok = cur.acc.some(function (a) { return norm(a) === norm(input); });
+  var cur = S.steps[S.stepIdx];
+  var ok = cur.acc.some(function (a) { return norm(a) === norm(input); });
   if (ok) { say('맞아! 잘하고 있어 👍'); }
   else {
     S.stuck.push(cur.q);
@@ -922,9 +922,9 @@ function handleSteps(input) {
 function onCorrect(afterStruggle) {
   if (!afterStruggle) say('정답! 🎉');
   pushResult(true);
-  const correctCount = S.recent.filter(Boolean).length;
+  var correctCount = S.recent.filter(Boolean).length;
   if (S.recent.length === 5 && correctCount >= 4) {
-    const next = nextAllowedIdx(S.levelIdx);
+    var next = nextAllowedIdx(S.levelIdx);
     S.recent = []; S.recent10 = [];
     if (next !== -1) {
       if (LEVEL_GRADE[LEVEL_ORDER[next]] > S.grade) {              // [변경] 위 학년 과정으로의 승급은 물어보고
@@ -947,17 +947,17 @@ function onCorrect(afterStruggle) {
 
 // ===== PART 8.5 수업 종료 — 요약 생성 + 선생님 전송 (변경 없음) =====
 function isEndCommand(t) {
-  const v = norm(t);
+  var v = norm(t);
   return v.indexOf('끝이야') !== -1 || v.indexOf('수업끝') !== -1 ||
          v === '끝' || v === '저장' || v.indexOf('그만할래') !== -1;
 }
 
 function sendSave(kind) {
-  const api = new URLSearchParams(location.search).get('api');
+  var api = new URLSearchParams(location.search).get('api');
   if (!api) return false;
-  const solved = S.records.filter(function (r) { return r.type === '풀이' || r.type === '재시도' || r.type === '유사문제'; });
-  const correct = solved.filter(function (r) { return r.result === 'correct'; }).length;
-  const stuckAll = [];
+  var solved = S.records.filter(function (r) { return r.type === '풀이' || r.type === '재시도' || r.type === '유사문제'; });
+  var correct = solved.filter(function (r) { return r.result === 'correct'; }).length;
+  var stuckAll = [];
   S.records.slice(S.sentIdx).forEach(function (r) { if (r.type === '단계풀이') r.stuck.forEach(function (s) { stuckAll.push(s); }); });
   fetch(api, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({
@@ -972,8 +972,8 @@ function sendSave(kind) {
 }
 
 function endSession() {
-  const solved = S.records.filter(function (r) { return r.type === '풀이' || r.type === '재시도' || r.type === '유사문제'; });
-  const correct = solved.filter(function (r) { return r.result === 'correct'; }).length;
+  var solved = S.records.filter(function (r) { return r.type === '풀이' || r.type === '재시도' || r.type === '유사문제'; });
+  var correct = solved.filter(function (r) { return r.result === 'correct'; }).length;
 
   say('오늘 수업 끝! 정말 수고했어 ' + S.nickname + ' 🎉\n' +
       '오늘 푼 문제: ' + solved.length + '개 (정답 ' + correct + '개)\n' +
@@ -986,7 +986,7 @@ function endSession() {
 }
 
 function loadStudent() {
-  const api = new URLSearchParams(location.search).get('api');
+  var api = new URLSearchParams(location.search).get('api');
   if (!api) { askGrade('diagnose'); return; }                      // [변경] 연습 모드도 학년은 물음
   S.mode = 'wait';
   fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain' },
@@ -996,7 +996,7 @@ function loadStudent() {
     if (d.ok && d.found && LEVEL_ORDER.indexOf(d.level) !== -1) {
       S.levelIdx = LEVEL_ORDER.indexOf(d.level);
       say('어? 지난번에 만났었지! ⭐[' + LEVEL_NAME[d.level] + ']⭐ 단계까지 했었어. 오늘은 이어서 해보자!\n(마치고 싶을 땐 "오늘 수업은 끝이야!"라고 말해줘)');
-      const g = parseInt(d.grade, 10);                             // [변경] 저장된 학년 재사용
+      var g = parseInt(d.grade, 10);                             // [변경] 저장된 학년 재사용
       if (g >= 1 && g <= 6) { S.grade = g; clampLevelToGrade(); startLearning(); }
       else askGrade('resume');                                     // [변경] 예전 기록엔 학년 없음 → 한 번만 물음
     } else { askGrade('diagnose'); }
@@ -1006,8 +1006,8 @@ function loadStudent() {
 
 // ===== PART 9. 입력 라우팅 (변경 없음) =====
 function handleInput() {
-  const el = document.getElementById('userInput');
-  const input = el.value.trim();
+  var el = document.getElementById('userInput');
+  var input = el.value.trim();
   if (input === '') return;
   echo(input); el.value = '';
   if (S.mode === 'done') { say('오늘 수업은 끝났어! 내일 또 만나 👋'); return; }
@@ -1032,6 +1032,13 @@ function handleInput() {
   else if (S.mode === 'steps') handleSteps(input);
   else if (S.mode === 'wait') say('잠깐만~ 아직 생각 중이야! 🤔');
 }
+
+// [변경] 인라인 onclick 대신 addEventListener 사용 (GAS CSP 대응)
+// Enter 키로도 보낼 수 있게 keydown 리스너도 함께 등록
+document.getElementById('sendBtn').addEventListener('click', handleInput);
+document.getElementById('userInput').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') handleInput();
+});
 
 say('안녕! 뭐라고 부르면 좋을까? 별명을 알려줘 (진짜 이름 말고 별명도 좋아!)');
 </script>
